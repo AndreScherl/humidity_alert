@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>andrepi2</title>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, minimum-scale=1.0"/>
+  	<meta name="apple-mobile-web-app-capable" content="yes"/>
+  	<meta name="mobile-web-app-capable" content="yes"/>
+	<script type="text/javascript" src="./jquery-3.0.0.min.js"></script>
+	<style type="text/css">
+		body {
+			text-align: center;
+			font-size: 2em;
+			background-color: #333;
+			color: #eee;
+		}
+	</style>
+</head>
+<body>
+<h1>Kellersensor</h1>
+<p id="time">???</p>
+<p id="temperature">???</p>
+<p id="humidity">???</p>
+<script type="text/javascript">
+	$(document).ready(function() {
+		var refresh_values = function(){
+			$.ajax({
+				url: "tdh_current_values.json",
+				success: function(tdh_current_values) {
+					$('#time').text(tdh_current_values.time);
+					$('#temperature').text((Math.round(tdh_current_values.temperature * 10) / 10) + " °C");
+					$('#humidity').text((Math.round(tdh_current_values.humidity * 10) / 10) + " %");
+				}
+			});
+		};
+		refresh_values();
+		setInterval(refresh_values, 10000);
+	});
+</script>
+</body>
+</html>

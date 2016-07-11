@@ -28,6 +28,9 @@ pin = 4
 os.environ['TZ'] = 'Europe/Berlin'
 time.tzset()
 
+# set the file directory to absolute path
+dirpath = os.path.dirname(os.path.abspath(__file__))
+
 def process_sensor_values():
 	# Try to grab a sensor reading.  Use the read_retry method which will retry up
 	# to 15 times to get a sensor reading (waiting 2 seconds between each retry).
@@ -36,22 +39,22 @@ def process_sensor_values():
 		# write data to csv file
 		stringtowrite = ''
 		timestring = time.strftime('%Y-%m-%d %H:%M:%S')
-		if os.path.exists('tdh-data.csv'):
+		if os.path.exists(dirpath + '/tdh-data.csv'):
 			stringtowrite = '{0};{1:0.1f};{2:0.1f}\n'.format(timestring, temperature, humidity)
 		else:
 			stringtowrite = 'time;Temperature[°C];Humidity[%]\n{0};{1:0.1f};{2:0.1f}\n'.format(timestring, temperature, humidity)
-		with open('tdh-data.csv', 'a') as csvfile:
+		with open(dirpath + '/tdh-data.csv', 'a') as csvfile:
 			csvfile.write(stringtowrite)
 
 		# write current values into json
-		with open('tdh_current_values.json', 'w') as jsonfile:
+		with open(dirpath + '/tdh_current_values.json', 'w') as jsonfile:
 			# jsonstring = '\'time\': {0}, \'temperature\': {1:0.1f}, \'humidity\': {2:0.1f}'.format(timestring, temperature, humidity)
 			jsonstring = json.dumps({'time': timestring, 'temperature': temperature, 'humidity': humidity});
 			jsonfile.write(jsonstring);
 	else:
 	    print('Failed to get reading. Try again!')
 
-	Timer(1*60.0, process_sensor_values).start()
+	Timer(10*60.0, process_sensor_values).start()
 
 Timer(0, process_sensor_values).start()
 

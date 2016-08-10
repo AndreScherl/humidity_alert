@@ -4,21 +4,17 @@ import Adafruit_DHT
 from threading import Timer
 import os, time
 import json
-#please read tutorial at http://home-automation-community.com/temperature-and-humidity-from-am2302-dht22-sensor-displayed-as-chart/
 
-#set up GPIO using BCM numbering
-GPIO.setmode(GPIO.BCM)
+# Set up pins for water level detection switches
+def setup_level_pins():
+	#set up GPIO using BCM numbering
+	GPIO.setmode(GPIO.BCM)
 
-# Set the pins working as electrodes switched by water if its level increases
-# set pin 24 to use internal pull up resitor
-GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-# the callback of electrodes short-circuit event
-def water_alert(channel):
-    print "The water level increased!"
-
-# set the callback to pin event
-GPIO.add_event_detect(24, GPIO.RISING, callback=water_alert)
+	# Set the pins working as electrodes switched by water if its level increases
+	# set pin 22, 23, 24 to use internal pull up resitor
+	GPIO.setup(22, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+	GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+	GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Get continuous sensor data (temperature and humidity) and show/store them
 # pin 4 will be used to get DHT sensor data
@@ -32,30 +28,33 @@ time.tzset()
 dirpath = os.path.dirname(os.path.abspath(__file__))
 
 def process_sensor_values():
-	# Try to grab a sensor reading.  Use the read_retry method which will retry up
-	# to 15 times to get a sensor reading (waiting 2 seconds between each retry).
 	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
-	if humidity is not None and temperature is not None:
+	setup_level_pins()
+	level1 = not GPIO.input(22)
+	level2 = not GPIO.input(23)
+	level3 = not GPIO.input(24)
+
+	if (humidity and temperature and level1 and level2 and level3) is not None:
 		# write data to csv file
 		stringtowrite = ''
 		timestring = time.strftime('%Y-%m-%d %H:%M:%S')
 		if os.path.exists(dirpath + '/tdh-data.csv'):
-			stringtowrite = '{0};{1:0.1f};{2:0.1f}\n'.format(timestring, temperature, humidity)
+			stringtowrite = '{0};{1:0.1f};{2:0.1f};{3};{4};{5}\n'.format(timestring, temperature, humidity, level1, level2, level3)
 		else:
-			stringtowrite = 'time;Temperature[°C];Humidity[%]\n{0};{1:0.1f};{2:0.1f}\n'.format(timestring, temperature, humidity)
+			stringtowrite = 'time;Temperature[°C];Humidity[%];Level1;Level2;Level3\n{0};{1:0.1f};{2:0.1f};{3};{4};{5}\n'.format(timestring, temperature, humidity, level1, level2, level3)
 		with open(dirpath + '/tdh-data.csv', 'a') as csvfile:
 			csvfile.write(stringtowrite)
 
 		# write current values into json
 		with open(dirpath + '/tdh_current_values.json', 'w') as jsonfile:
-			# jsonstring = '\'time\': {0}, \'temperature\': {1:0.1f}, \'humidity\': {2:0.1f}'.format(timestring, temperature, humidity)
-			jsonstring = json.dumps({'time': timestring, 'temperature': temperature, 'humidity': humidity});
+			jsonstring = json.dumps({'time': timestring, 'temperature': temperature, 'humidity': humidity, 'level1': level1, 'level2': level2, 'level3': level3});
 			jsonfile.write(jsonstring);
 	else:
 	    print('Failed to get reading. Try again!')
+
+	GPIO.cleanup()
 
 	Timer(10*60.0, process_sensor_values).start()
 
 Timer(0, process_sensor_values).start()
 
-GPIO.cleanup()

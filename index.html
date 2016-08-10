@@ -19,6 +19,22 @@
 			background-color: #333;
 			color: #eee;
 		}
+
+		#waterlevel div {
+			padding: 0 5px;
+			border: solid #333 1px;
+			display: inline-block;
+		}
+		.white {
+			background-color: #eee;
+			color: #333;
+		}
+		.green {
+			background-color: darkgreen;
+		}
+		.red {
+			background-color: red;
+		}
 	</style>
 </head>
 <body>
@@ -26,6 +42,7 @@
 <p id="time">???</p>
 <p id="temperature">???</p>
 <p id="humidity">???</p>
+<div id="waterlevel">Wasserpegel:<br /> <div id="level1" class="white">17cm</div><div id="level2" class="white">32cm</div><div id="level3" class="white">45cm</div></div>
 <script type="text/javascript">
 	$(document).ready(function() {
 		var refresh_values = function(){
@@ -35,6 +52,24 @@
 					$('#time').text(tdh_current_values.time);
 					$('#temperature').text((Math.round(tdh_current_values.temperature * 10) / 10) + " °C");
 					$('#humidity').text((Math.round(tdh_current_values.humidity * 10) / 10) + " %");
+					if(tdh_current_values.level1 == true) {
+						$('#level1').attr("class", "red");
+					}
+					if(tdh_current_values.level1 == false) {
+						$('#level1').attr("class", "green");
+					}
+					if(tdh_current_values.level2 == true) {
+						$('#level2').attr("class", "red");
+					}
+					if(tdh_current_values.level2 == false) {
+						$('#level2').attr("class", "green");
+					}
+					if(tdh_current_values.level3 == true) {
+						$('#level3').attr("class", "red");
+					}
+					if(tdh_current_values.level3 == false) {
+						$('#level3').attr("class", "green");
+					}
 				}
 			});
 		};

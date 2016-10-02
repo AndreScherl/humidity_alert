@@ -59,11 +59,12 @@ def process_sensor_values():
 
 		# check if dehumidifier has to be switched on
 		if (humidity > 50):
-			rfdevice.tx_code(12345, protocol, pulselength)
+			rfdevice.tx_code(5242961, protocol, pulselength)
 			print('Switch on')
 		else:
-			rfdevice.tx_code(54321, protocol, pulselength)
+			rfdevice.tx_code(5242964, protocol, pulselength)
 			print('Switch off')
+
 	else:
 	    print('Failed to get reading. Try again!')
 

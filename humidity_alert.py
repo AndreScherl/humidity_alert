@@ -4,6 +4,7 @@ import Adafruit_DHT
 from threading import Timer
 import os, time
 import json
+from rpi_rf import RFDevice
 
 # Set up pins for water level detection switches
 def setup_level_pins():
@@ -27,6 +28,12 @@ time.tzset()
 # set the file directory to absolute path
 dirpath = os.path.dirname(os.path.abspath(__file__))
 
+# set up the 433Mhz sender
+rfdevice = RFDevice(17)
+rfdevice.enable_tx()
+pulselength = 350
+protocol = 1
+
 def process_sensor_values():
 	humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
 	setup_level_pins()
@@ -49,6 +56,14 @@ def process_sensor_values():
 		with open(dirpath + '/tdh_current_values.json', 'w') as jsonfile:
 			jsonstring = json.dumps({'time': timestring, 'temperature': temperature, 'humidity': humidity, 'level1': level1, 'level2': level2, 'level3': level3});
 			jsonfile.write(jsonstring);
+
+		# check if dehumidifier has to be switched on
+		if (humidity > 50):
+			rfdevice.tx_code(12345, protocol, pulselength)
+			print('Switch on')
+		else:
+			rfdevice.tx_code(54321, protocol, pulselength)
+			print('Switch off')
 	else:
 	    print('Failed to get reading. Try again!')
 

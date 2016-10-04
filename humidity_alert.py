@@ -68,9 +68,6 @@ def process_sensor_values():
 	else:
 	    print('Failed to get reading. Try again!')
 
-	GPIO.cleanup()
-
-	Timer(10*60.0, process_sensor_values).start()
+	Timer(1, process_sensor_values).start()
 
 Timer(0, process_sensor_values).start()
-
